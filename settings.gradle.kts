@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ParentKidsApp"
+rootProject.name = "print-for-kids"
 include(":app")

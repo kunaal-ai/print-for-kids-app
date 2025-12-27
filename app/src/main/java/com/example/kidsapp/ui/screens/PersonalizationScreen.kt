@@ -138,14 +138,26 @@ fun PersonalizationScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                difficulties.forEach { difficulty ->
-                    SelectableCard(
-                        label = difficulty.label,
-                        isSelected = selectedDifficulty == difficulty.id,
-                        onClick = { selectedDifficulty = difficulty.id },
-                        color = difficulty.color
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    difficulties.forEach { difficulty ->
+                        FilterChip(
+                            selected = selectedDifficulty == difficulty.id,
+                            onClick = { selectedDifficulty = difficulty.id },
+                            label = { Text(difficulty.label) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = difficulty.color.copy(alpha = 0.4f),
+                                selectedLabelColor = Color.Black,
+                                containerColor = Color.White
+                            ),
+                            border = FilterChipDefaults.filterChipBorder(
+                                borderColor = Color.LightGray,
+                                selectedBorderColor = difficulty.color.darken(0.3f)
+                            )
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))

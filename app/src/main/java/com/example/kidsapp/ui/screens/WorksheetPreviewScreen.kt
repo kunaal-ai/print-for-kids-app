@@ -167,14 +167,15 @@ fun WorksheetPreviewScreen(
             // Printer Setting
             SettingRow(
                 icon = Icons.Default.Print,
-                title = "HP DeskJet 3700",
-                subtitle = "Ready to print",
-                isReady = true,
+                title = "Printer",
+                subtitle = "Select in next step", // Android handles this in the system dialog
+                isReady = true, 
+                value = "Tap to Select",
                 action = { 
                     Surface(
                         color = Color(0xFFF5F5F5),
                         shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.clickable { }
+                        modifier = Modifier.clickable { printWebView(context, htmlContent) }
                     ) {
                         Text(
                             text = "Change", 

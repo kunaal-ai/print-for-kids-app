@@ -55,7 +55,8 @@ fun AppNavigation() {
             SubjectSelectionScreen(
                 onSubjectSelected = { subject ->
                     navController.navigate("operation/$grade/$subject")
-                }
+                },
+                onBack = { navController.popBackStack() }
             )
         }
         composable(
@@ -71,7 +72,8 @@ fun AppNavigation() {
             OperationSelectionScreen(
                 onOperationSelected = { operation ->
                     navController.navigate("preview/$grade/$subject/$operation")
-                }
+                },
+                onBack = { navController.popBackStack() }
             )
         }
         composable(
@@ -86,7 +88,12 @@ fun AppNavigation() {
             val subject = backStackEntry.arguments?.getString("subject") ?: "math"
             val operation = backStackEntry.arguments?.getString("operation") ?: "add"
             
-            WorksheetPreviewScreen(grade, subject, operation)
+            WorksheetPreviewScreen(
+                grade = grade,
+                subject = subject,
+                operation = operation,
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }

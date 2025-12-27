@@ -9,6 +9,11 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,27 +27,32 @@ data class SubjectOption(val id: String, val label: String, val color: Color)
 
 @Composable
 fun SubjectSelectionScreen(
-    onSubjectSelected: (String) -> Unit
+    onSubjectSelected: (String) -> Unit,
+    onBack: () -> Unit
 ) {
     val subjects = listOf(
         SubjectOption("math", "🔢 Math", Color(0xFFFFF59D)), // Yellow
         SubjectOption("english", "📖 English", Color(0xFF81D4FA)) // Light Blue
     )
 
-    Scaffold { innerPadding ->
+    Scaffold(
+        topBar = {
+            androidx.compose.material3.TopAppBar(
+                title = { Text("Select Subject") },
+                navigationIcon = {
+                    androidx.compose.material3.IconButton(onClick = onBack) {
+                        Icon(androidx.compose.material.icons.Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            Text(
-                text = "Select Subject",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
-
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2), // 2 columns
                 contentPadding = PaddingValues(8.dp),

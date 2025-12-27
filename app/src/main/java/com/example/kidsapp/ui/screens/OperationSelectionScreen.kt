@@ -23,8 +23,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.kidsapp.ui.components.SelectionCard
 
-data class OperationOption(val id: String, val label: String, val color: Color)
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Remove
+import androidx.compose.material.icons.rounded.Clear
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.sp
 
+data class OperationOption(val id: String, val label: String, val icon: ImageVector?, val color: Color)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OperationSelectionScreen(
@@ -32,19 +47,35 @@ fun OperationSelectionScreen(
     onBack: () -> Unit
 ) {
     val operations = listOf(
-        OperationOption("add", "➕", Color(0xFFA5D6A7)), // Green
-        OperationOption("subtract", "➖", Color(0xFFEF9A9A)), // Red
-        OperationOption("multiply", "✖️", Color(0xFFFFF59D)), // Yellow
-        OperationOption("divide", "➗", Color(0xFF90CAF9))  // Blue
+        OperationOption("add", "Addition", Icons.Rounded.Add, Color(0xFFFFCC80)),
+        OperationOption("subtract", "Subtraction", Icons.Rounded.Remove, Color(0xFFEF9A9A)),
+        OperationOption("multiply", "Multiplication", Icons.Rounded.Clear, Color(0xFFFFF59D)),
+        OperationOption("divide", "Division", null, Color(0xFF90CAF9)) // Null icon means use symbol
     )
 
     Scaffold(
         topBar = {
-            androidx.compose.material3.TopAppBar(
-                title = { Text("Math Operation") },
+            TopAppBar(
+                title = {
+                    Text(
+                        "Math Operation",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
-                    androidx.compose.material3.IconButton(onClick = onBack) {
-                        Icon(androidx.compose.material.icons.Icons.Default.ArrowBack, contentDescription = "Back")
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    Row(
+                        modifier = Modifier.padding(end = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(modifier = Modifier.size(8.dp).background(Color.LightGray, CircleShape))
+                        Box(modifier = Modifier.size(8.dp).background(Color.LightGray, CircleShape))
+                        Box(modifier = Modifier.size(24.dp, 8.dp).background(Color(0xFFFFC107), CircleShape))
                     }
                 }
             )
@@ -54,22 +85,98 @@ fun OperationSelectionScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(horizontal = 24.dp)
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Choose an Operation",
+                style = MaterialTheme.typography.headlineLarge.copy(fontSize = 32.sp, lineHeight = 40.sp),
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "What kind of math do you want to practice?",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.Gray
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(8.dp),
+                contentPadding = PaddingValues(bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(operations) { op ->
-                    SelectionCard(
-                        label = op.label,
-                        color = op.color,
+                    OperationCard(
+                        operation = op,
                         onClick = { onOperationSelected(op.id) }
                     )
                 }
             }
         }
     }
+}
+
+@Composable
+fun OperationCard(
+    operation: OperationOption,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .aspectRatio(0.9f)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(32.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .background(operation.color.copy(alpha = 0.3f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                if (operation.icon != null) {
+                    Icon(
+                        imageVector = operation.icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = operation.color.copy(alpha = 1f).darken(0.4f)
+                    )
+                } else {
+                    // Fallback for Division or others without standard icons
+                    Text(
+                        text = "÷",
+                        fontSize = 48.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = operation.color.copy(alpha = 1f).darken(0.4f)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = operation.label,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+        }
+    }
+}
+
+// Helper to darken color
+fun Color.darken(factor: Float): Color {
+    return Color(
+        red = this.red * (1 - factor),
+        green = this.green * (1 - factor),
+        blue = this.blue * (1 - factor),
+        alpha = this.alpha
+    )
 }

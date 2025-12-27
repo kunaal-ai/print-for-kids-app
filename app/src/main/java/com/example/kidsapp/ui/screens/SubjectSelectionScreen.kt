@@ -41,10 +41,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -87,8 +83,6 @@ fun SubjectSelectionScreen(
         SubjectOption("social", "Social Studies", Icons.Default.Public, Color(0xFF80DEEA), isEnabled = false) // Cyan
     )
 
-    var selectedSubjectId by remember { mutableStateOf<String?>(null) }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -116,24 +110,6 @@ fun SubjectSelectionScreen(
                    }
                 }
             )
-        },
-        floatingActionButton = {
-            if (selectedSubjectId != null) {
-                Button(
-                    onClick = { onSubjectSelected(selectedSubjectId!!) },
-                    modifier = Modifier.size(64.dp),
-                    shape = CircleShape,
-                    contentPadding = PaddingValues(0.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowForward,
-                        contentDescription = "Next",
-                        tint = Color.Black,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            }
         }
     ) { innerPadding ->
         Column(
@@ -171,10 +147,10 @@ fun SubjectSelectionScreen(
                 items(subjects) { subject ->
                     SubjectCard(
                         subject = subject,
-                        isSelected = selectedSubjectId == subject.id,
+                        isSelected = false,
                         onClick = { 
                             if (subject.isEnabled) {
-                                selectedSubjectId = subject.id 
+                                onSubjectSelected(subject.id)
                             }
                         }
                     )

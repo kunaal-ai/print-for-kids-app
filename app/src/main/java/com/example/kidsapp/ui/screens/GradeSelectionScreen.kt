@@ -28,10 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,8 +44,6 @@ data class GradeOption(val id: String, val label: String, val ages: String, val 
 fun GradeSelectionScreen(
     onGradeSelected: (String) -> Unit
 ) {
-    var selectedGradeId by remember { mutableStateOf<String?>(null) }
-
     val grades = listOf(
         GradeOption("pre", "Preschool", "Ages 3-4", Color(0xFF8D6E63)), // Brownish
         GradeOption("k", "Kindergarten", "Ages 5-6", Color(0xFFFBC02D)), // Yellowish
@@ -77,28 +71,6 @@ fun GradeSelectionScreen(
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Spacer(modifier = Modifier.width(48.dp)) // Balance
-            }
-        },
-        bottomBar = {
-            Button(
-                onClick = { selectedGradeId?.let { onGradeSelected(it) } },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp)
-                    .height(56.dp),
-                enabled = selectedGradeId != null,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFFFC107), // Yellow
-                    contentColor = Color.Black,
-                    disabledContainerColor = Color.LightGray
-                ),
-                shape = RoundedCornerShape(28.dp)
-            ) {
-                Text(
-                    text = "Next",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
             }
         }
     ) { innerPadding ->
@@ -133,8 +105,7 @@ fun GradeSelectionScreen(
                         label = grade.label,
                         subLabel = grade.ages,
                         color = grade.color,
-                        isSelected = selectedGradeId == grade.id,
-                        onClick = { selectedGradeId = grade.id }
+                        onClick = { onGradeSelected(grade.id) }
                     )
                 }
             }

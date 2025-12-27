@@ -38,6 +38,8 @@ fun WorksheetPreviewScreen(
     grade: String,
     subject: String,
     operation: String,
+    selectedPrinterName: String? = null,
+    onChangePrinter: (String?) -> Unit,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -173,14 +175,14 @@ fun WorksheetPreviewScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Printer Setting (Informational but Clickable)
+            // Printer Setting
             SettingRow(
                 icon = Icons.Default.Print,
                 title = "Printer",
-                subtitle = "Select at final step",
-                isReady = true,
-                value = "Standard",
-                onClick = { printWebView(context, htmlContent, isColor, isLetterSize) }
+                subtitle = if (selectedPrinterName != null) "Ready to print" else "Select printer",
+                isReady = selectedPrinterName != null,
+                value = selectedPrinterName ?: "Select",
+                onClick = { onChangePrinter(selectedPrinterName) }
             )
 
             Spacer(modifier = Modifier.height(12.dp))

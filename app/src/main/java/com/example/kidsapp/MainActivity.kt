@@ -78,23 +78,50 @@ fun AppNavigation() {
             )
         }
         composable(
-            "preview/{grade}/{subject}/{operation}",
+            "preview/{grade}/{subject}/{operation}?printer={printer}",
             arguments = listOf(
                 navArgument("grade") { type = NavType.StringType },
                 navArgument("subject") { type = NavType.StringType },
-                navArgument("operation") { type = NavType.StringType }
+                navArgument("operation") { type = NavType.StringType },
+                navArgument("printer") { type = NavType.StringType; nullable = true }
             )
         ) { backStackEntry ->
             val grade = backStackEntry.arguments?.getString("grade") ?: "k"
             val subject = backStackEntry.arguments?.getString("subject") ?: "math"
             val operation = backStackEntry.arguments?.getString("operation") ?: "add"
-            
+            // Get any returned printer name from savedStateHandle if navigating back
+            val savedStateHandle = backStackEntry.savedStateHandle
+            val selectedPrinter = savedStateHandle.get<String>("selected_printer") 
+                ?: backStackEntry.arguments?.getString("printer")
+
             WorksheetPreviewScreen(
                 grade = grade,
                 subject = subject,
                 operation = operation,
+                selectedPrinterName = selectedPrinter,
+                onChangePrinter = { current ->
+                     navController.navigate("printer_selection?current=$current")
+                },
                 onBack = { navController.popBackStack() }
             )
+        }
+        
+        composable(
+            "printer_selection?current={current}",
+            arguments = listOf(navArgument("current") { nullable = true })
+        ) { backStackEntry ->
+             val current = backStackEntry.arguments?.getString("current")
+             PrinterSelectionScreen(
+                 currentPrinter = current,
+                 onPrinterSelected = { printer ->
+                     // Pass result back
+                     navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("selected_printer", printer)
+                     navController.popBackStack()
+                 },
+                 onBack = { navController.popBackStack() }
+             )
         }
     }
 }

@@ -173,13 +173,14 @@ fun WorksheetPreviewScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Printer Setting (Informational Only)
+            // Printer Setting (Informational but Clickable)
             SettingRow(
                 icon = Icons.Default.Print,
                 title = "Printer",
                 subtitle = "Select at final step",
                 isReady = true,
-                value = "Standard"
+                value = "Standard",
+                onClick = { printWebView(context, htmlContent, isColor, isLetterSize) }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -280,6 +281,7 @@ fun SettingRow(
     subtitle: String? = null,
     isReady: Boolean = false,
     value: String? = null,
+    onClick: (() -> Unit)? = null,
     action: (@Composable () -> Unit)? = null,
     valueComponent: (@Composable () -> Unit)? = null
 ) {
@@ -287,7 +289,9 @@ fun SettingRow(
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
     ) {
         Row(
             modifier = Modifier

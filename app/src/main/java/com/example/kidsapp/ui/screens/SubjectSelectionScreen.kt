@@ -58,7 +58,8 @@ data class SubjectOption(
     val id: String,
     val label: String,
     val icon: ImageVector,
-    val color: Color
+    val color: Color,
+    val isEnabled: Boolean = true
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,12 +79,12 @@ fun SubjectSelectionScreen(
     }
 
     val subjects = listOf(
-        SubjectOption("math", "Math", Icons.Default.Calculate, Color(0xFFFFCC80)), // Orange-ish
-        SubjectOption("english", "Reading", Icons.Default.MenuBook, Color(0xFF90CAF9)), // Blue
-        SubjectOption("science", "Science", Icons.Default.Science, Color(0xFFA5D6A7)), // Green
-        SubjectOption("art", "Art", Icons.Default.Brush, Color(0xFFE1BEE7)), // Purple
-        SubjectOption("writing", "Writing", Icons.Default.Edit, Color(0xFFEF9A9A)), // Red
-        SubjectOption("social", "Social Studies", Icons.Default.Public, Color(0xFF80DEEA)) // Cyan
+        SubjectOption("math", "Math", Icons.Default.Calculate, Color(0xFFFFCC80), isEnabled = true), // Orange-ish
+        SubjectOption("english", "Reading", Icons.Default.MenuBook, Color(0xFF90CAF9), isEnabled = false), // Blue
+        SubjectOption("science", "Science", Icons.Default.Science, Color(0xFFA5D6A7), isEnabled = false), // Green
+        SubjectOption("art", "Art", Icons.Default.Brush, Color(0xFFE1BEE7), isEnabled = false), // Purple
+        SubjectOption("writing", "Writing", Icons.Default.Edit, Color(0xFFEF9A9A), isEnabled = false), // Red
+        SubjectOption("social", "Social Studies", Icons.Default.Public, Color(0xFF80DEEA), isEnabled = false) // Cyan
     )
 
     var selectedSubjectId by remember { mutableStateOf<String?>(null) }
@@ -161,40 +162,6 @@ fun SubjectSelectionScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Select All Chip (Visual only for now)
-            Row(
-                modifier = Modifier
-            ) {
-                Card(
-                    modifier = Modifier
-                        .height(40.dp)
-                        .clickable { /* Select All Logic */ },
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.MenuBook, // Placeholder icon
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = Color.Black
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Select All",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-             Spacer(modifier = Modifier.height(24.dp))
-
-
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 contentPadding = PaddingValues(bottom = 100.dp), // Space for FAB
@@ -205,7 +172,11 @@ fun SubjectSelectionScreen(
                     SubjectCard(
                         subject = subject,
                         isSelected = selectedSubjectId == subject.id,
-                        onClick = { selectedSubjectId = subject.id }
+                        onClick = { 
+                            if (subject.isEnabled) {
+                                selectedSubjectId = subject.id 
+                            }
+                        }
                     )
                 }
             }
@@ -221,14 +192,15 @@ fun SubjectCard(
 ) {
     val borderColor = if (isSelected) Color(0xFFFFC107) else Color.Transparent
     val borderWidth = if (isSelected) 3.dp else 0.dp
+    val alpha = if (subject.isEnabled) 1f else 0.5f
 
     Card(
         modifier = Modifier
             .aspectRatio(0.9f) // Almost square
-            .clickable { onClick() },
+            .clickable(enabled = subject.isEnabled) { onClick() },
         shape = RoundedCornerShape(32.dp), // Very round corners
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = alpha)),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (subject.isEnabled) 4.dp else 0.dp),
         border = androidx.compose.foundation.BorderStroke(borderWidth, borderColor)
     ) {
         Column(
@@ -239,14 +211,14 @@ fun SubjectCard(
             Box(
                 modifier = Modifier
                     .size(80.dp)
-                    .background(subject.color.copy(alpha = 0.3f), CircleShape),
+                    .background(subject.color.copy(alpha = 0.3f * alpha), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = subject.icon,
                     contentDescription = null,
                     modifier = Modifier.size(40.dp),
-                    tint = subject.color.copy(alpha = 1f).compositeOver(Color.Gray) // Darker version
+                    tint = subject.color.copy(alpha = 1f * alpha).compositeOver(Color.Gray)
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -254,8 +226,17 @@ fun SubjectCard(
                 text = subject.label,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = Color.Black.copy(alpha = alpha)
             )
+            
+            if (!subject.isEnabled) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Coming Soon",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Gray
+                )
+            }
         }
     }
 }

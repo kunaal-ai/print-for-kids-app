@@ -25,6 +25,7 @@ import com.example.kidsapp.ui.components.SelectionCard
 
 data class SubjectOption(val id: String, val label: String, val color: Color)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubjectSelectionScreen(
     onSubjectSelected: (String) -> Unit,

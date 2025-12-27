@@ -40,8 +40,6 @@ data class OperationOption(val id: String, val label: String, val icon: ImageVec
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
 fun OperationSelectionScreen(
     onOperationSelected: (String) -> Unit,
     onBack: () -> Unit

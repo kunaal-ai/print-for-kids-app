@@ -53,6 +53,7 @@ fun AppNavigation() {
         ) { backStackEntry ->
             val grade = backStackEntry.arguments?.getString("grade") ?: "k"
             SubjectSelectionScreen(
+                gradeId = grade,
                 onSubjectSelected = { subject ->
                     navController.navigate("operation/$grade/$subject")
                 },

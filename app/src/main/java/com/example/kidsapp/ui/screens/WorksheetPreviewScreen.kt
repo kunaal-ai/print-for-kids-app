@@ -6,29 +6,21 @@ import android.print.PrintManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.kidsapp.utils.MathGenerator
 
@@ -38,35 +30,203 @@ fun WorksheetPreviewScreen(
     grade: String,
     subject: String,
     operation: String,
-    selectedPrinterName: String? = null,
-    onChangePrinter: (String?) -> Unit,
+    difficulty: String? = null,
+    layoutType: String = "worksheet_only",
+    coloringItem: String = "none",
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val problems = remember(grade, operation) {
-        MathGenerator.generateProblems(grade, operation)
+    val isIdentification = grade == "pre" || operation == "identification" || operation == "numbers" || operation == "alphabets" || operation == "shapes" || operation == "colors"
+    
+    val problemsCount = when {
+        isIdentification && layoutType == "worksheet_only" -> 18
+        isIdentification -> 12
+        layoutType == "worksheet_only" -> 18
+        else -> 12
     }
 
-    // State for Print Settings
-    var isColor by remember { androidx.compose.runtime.mutableStateOf(true) }
-    var isLetterSize by remember { androidx.compose.runtime.mutableStateOf(true) } // True = Letter, False = A4
-    var copies by remember { androidx.compose.runtime.mutableIntStateOf(1) } // Visual only, system handles copies
+    val problems = remember(grade, operation, difficulty, layoutType) {
+        MathGenerator.generateProblems(grade, operation, difficulty, count = problemsCount)
+    }
 
     // Generate HTML for the worksheet
-    val htmlContent = remember(problems) {
+    val htmlContent = remember(problems, grade, operation, difficulty, layoutType, coloringItem) {
         val sb = StringBuilder()
         sb.append("<html><head><style>")
-        sb.append("body { font-family: sans-serif; padding: 20px; }")
-        sb.append(".grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }")
-        sb.append(".item { font-size: 24px; padding: 15px; border-bottom: 0px solid #ccc; }")
-        sb.append("h1 { text-align: center; }")
+        
+        // Base variables based on layout
+        val idType = if (grade == "pre") operation else "none"
+        val idFontSize = when (idType) {
+            "numbers", "alphabets" -> "60px"
+            "shapes", "colors" -> "35px"
+            else -> "60px"
+        }
+
+        val gridGap = if (isIdentification) "20px" else if (layoutType == "worksheet_only") "40px" else "20px"
+        val itemPadding = when {
+            isIdentification && layoutType != "worksheet_only" -> "15px 10px"
+            isIdentification -> "25px 10px"
+            layoutType == "worksheet_only" -> "35px 20px"
+            else -> "20px 10px"
+        }
+        val itemFontSize = if (isIdentification) idFontSize else if (layoutType == "worksheet_only") "38px" else "32px"
+        val gridCols = "1fr 1fr 1fr"
+        
+        sb.append("""
+            * {
+                box-sizing: border-box;
+            }
+            @page {
+                size: portrait;
+                margin: 0;
+            }
+            body { 
+                font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif; 
+                padding: 40px; 
+                margin: 0;
+                color: #333;
+                background-color: #fff;
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                max-height: 100vh;
+                overflow: hidden;
+                width: 100vw;
+                border: 10px solid #FFC107;
+                border-radius: 0;
+                -webkit-print-color-adjust: exact;
+            }
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                border-bottom: 3px dashed #FFC107;
+                padding-bottom: 10px;
+                margin-bottom: 15px;
+            }
+            .name-field {
+                font-size: 18px;
+                font-weight: bold;
+                color: #555;
+            }
+            .logo {
+                font-size: 14px;
+                font-weight: 900;
+                color: #FFC107;
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+            }
+            .info {
+                text-align: center;
+                margin-bottom: 15px;
+                color: #777;
+                font-size: 14px;
+            }
+            .grid { 
+                display: grid; 
+                grid-template-columns: $gridCols; 
+                gap: $gridGap; 
+                flex-grow: 1;
+            }
+            .item { 
+                font-size: $itemFontSize; 
+                padding: $itemPadding; 
+                border: 2px solid #EEE;
+                border-radius: 12px;
+                text-align: center;
+                background-color: #FAFAFA;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+            }
+            .footer {
+                margin-top: auto;
+                text-align: center;
+            }
+            .extra-area {
+                margin-top: 15px;
+                border: 3px dashed #E0E0E0;
+                border-radius: 20px;
+                padding: 15px;
+                background-color: #FFFDE7;
+            }
+            .score-title {
+                font-size: 20px;
+                font-weight: bold;
+                color: #FF5722;
+                margin-bottom: 10px;
+            }
+            .stars {
+                font-size: 30px;
+                color: #FFC107;
+                letter-spacing: 10px;
+            }
+            .coloring-item {
+                font-size: 120px;
+                text-align: center;
+                display: block;
+                margin: 0 auto;
+            }
+            .coloring-label {
+                font-size: 24px;
+                color: #444;
+                text-align: center;
+                font-weight: bold;
+            }
+        """.trimIndent())
         sb.append("</style></head><body>")
-        sb.append("<h1>Math Worksheet ($grade)</h1>")
+        
+        // Header
+        sb.append("<div class='header'>")
+        sb.append("<div class='name-field'>Name: __________________________</div>")
+        sb.append("<div class='logo'>Print for kids</div>")
+        sb.append("</div>")
+
+        // Info
+        sb.append("<div class='info'>")
+        val operationLabel = operation.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+        sb.append("$operationLabel Identification | Level: $difficulty | Grade: Preschool")
+        sb.append("</div>")
+
+        // Content
         sb.append("<div class='grid'>")
         problems.forEach { prob ->
             sb.append("<div class='item'>$prob</div>")
         }
         sb.append("</div>")
+        
+        // Conditional Layout Elements
+        when (layoutType) {
+            "score_box" -> {
+                sb.append("<div class='extra-area'>")
+                sb.append("<div class='score-title'>Teacher's / Parent's Corner</div>")
+                sb.append("<div style='display:flex; justify-content:space-between; align-items:center;'>")
+                sb.append("<div style='font-size:24px;'>Score: ________ / ${problems.size}</div>")
+                sb.append("<div class='stars'>☆☆☆☆☆</div>")
+                sb.append("</div>")
+                sb.append("</div>")
+            }
+            "drawing_area" -> {
+                sb.append("<div class='extra-area' style='height: auto; min-height: 220px;'>")
+                sb.append("<div class='score-title'>Fun Drawing & Coloring Zone!</div>")
+                if (coloringItem != "none") {
+                    val emoji = coloringItem.split(" ").lastOrNull() ?: "🎨"
+                    val name = coloringItem.split(" ").firstOrNull() ?: "this"
+                    sb.append("<div class='coloring-item'>$emoji</div>")
+                    sb.append("<div class='coloring-label'>Color the $name!</div>")
+                } else {
+                    sb.append("<div style='color:#AAA; text-align:center; padding-top:40px;'>Draw something awesome here! 🎨</div>")
+                }
+                sb.append("</div>")
+            }
+        }
+        
+        // Footer (Minimized)
+        sb.append("<div class='footer'>")
+        sb.append("<div style='color:#CCC; font-size:10px;'>Generated by Print for kids</div>")
+        sb.append("</div>")
+        
         sb.append("</body></html>")
         sb.toString()
     }
@@ -95,26 +255,8 @@ fun WorksheetPreviewScreen(
                     .background(Color.White)
                     .padding(24.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Estimated cost",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.Gray
-                    )
-                    Text(
-                        text = "Free",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { printWebView(context, htmlContent, isColor, isLetterSize) },
+                    onClick = { printWebView(context, htmlContent) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
@@ -127,7 +269,7 @@ fun WorksheetPreviewScreen(
                     Icon(Icons.Filled.Print, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Print • 1 Page",
+                        text = "Print",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -163,194 +305,18 @@ fun WorksheetPreviewScreen(
                     }
                 )
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Settings Section
-            Text(
-                text = "Print Settings",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Printer Setting
-            SettingRow(
-                icon = Icons.Default.Print,
-                title = "Printer",
-                subtitle = if (selectedPrinterName != null) "Ready to print" else "Select printer",
-                isReady = selectedPrinterName != null,
-                value = selectedPrinterName ?: "Select",
-                onClick = { onChangePrinter(selectedPrinterName) }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Copies Setting (Visual Only - System handles this)
-            SettingRow(
-                icon = Icons.Default.FileCopy, 
-                title = "Copies",
-                valueComponent = {
-                   Row(
-                       verticalAlignment = Alignment.CenterVertically,
-                       modifier = Modifier.background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp))
-                   ) {
-                       IconButton(onClick = { if (copies > 1) copies-- }) { 
-                           Text("-", fontWeight = FontWeight.Bold) 
-                       }
-                       Text("$copies", fontWeight = FontWeight.Bold)
-                       IconButton(
-                           onClick = { copies++ },
-                           colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFFFC107))
-                       ) { 
-                           Text("+", fontWeight = FontWeight.Bold, color = Color.Black) 
-                       }
-                   }
-                }
-            )
-             Spacer(modifier = Modifier.height(12.dp))
-             
-             // Color Setting
-            SettingRow(
-                icon = Icons.Default.Palette,
-                title = "Color",
-                valueComponent = {
-                   Row(
-                       verticalAlignment = Alignment.CenterVertically,
-                       modifier = Modifier
-                           .background(Color(0xFFF5F5F5), RoundedCornerShape(16.dp))
-                           .padding(4.dp)
-                   ) {
-                       Button(
-                           onClick = { isColor = true }, 
-                           colors = ButtonDefaults.buttonColors(
-                               containerColor = if (isColor) Color.White else Color.Transparent, 
-                               contentColor = if (isColor) Color.Black else Color.Gray
-                           ),
-                           shape = RoundedCornerShape(12.dp),
-                           elevation = ButtonDefaults.buttonElevation(defaultElevation = if (isColor) 2.dp else 0.dp),
-                           contentPadding = PaddingValues(horizontal = 12.dp),
-                           modifier = Modifier.height(32.dp)
-                       ) { Text("Color", fontSize = 12.sp, fontWeight = FontWeight.Bold) }
-                       
-                       TextButton(
-                           onClick = { isColor = false }, 
-                           modifier = Modifier.height(32.dp),
-                           colors = ButtonDefaults.textButtonColors(
-                               contentColor = if (!isColor) Color.Black else Color.Gray
-                           ),
-                           // Hacky way to simulate selection style for the text button or just switch types? 
-                           // For simplicity, let's just color the text correctly. 
-                           // A better way is two Buttons with different states.
-                       ) { Text("B&W", fontSize = 12.sp, fontWeight = FontWeight.Bold) }
-                   }
-                }
-            )
-             Spacer(modifier = Modifier.height(12.dp))
-
-            // Paper Size Setting
-             SettingRow(
-                icon = Icons.Default.AspectRatio,
-                title = "Paper Size",
-                valueComponent = {
-                   Row(
-                       verticalAlignment = Alignment.CenterVertically,
-                       modifier = Modifier.background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
-                           .padding(horizontal = 12.dp, vertical = 6.dp)
-                           .clickable { isLetterSize = !isLetterSize }
-                   ) {
-                       Text(
-                           if (isLetterSize) "Letter (8.5x11)" else "ISO A4", 
-                           fontSize = 14.sp, 
-                           color = Color.Black, 
-                           fontWeight = FontWeight.Bold
-                       )
-                       Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.Gray)
-                   }
-                }
-            )
-
             Spacer(modifier = Modifier.height(100.dp)) // Space for scrolling under bottom bar
         }
     }
 }
 
-@Composable
-fun SettingRow(
-    icon: ImageVector,
-    title: String,
-    subtitle: String? = null,
-    isReady: Boolean = false,
-    value: String? = null,
-    onClick: (() -> Unit)? = null,
-    action: (@Composable () -> Unit)? = null,
-    valueComponent: (@Composable () -> Unit)? = null
-) {
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .background(Color(0xFFFFF8E1), CircleShape), // Light Yellow bg for icon
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(icon, contentDescription = null, tint = Color.Black, modifier = Modifier.size(24.dp))
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                if (subtitle != null) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (isReady) {
-                            Box(modifier = Modifier.size(6.dp).background(Color(0xFF4CAF50), CircleShape))
-                            Spacer(modifier = Modifier.width(4.dp))
-                        }
-                        Text(
-                            text = subtitle,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = Color.Gray
-                        )
-                    }
-                }
-            }
-            
-            Spacer(modifier = Modifier.weight(1f))
-            
-            if (value != null) {
-                Text(text = value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-            }
-            if (action != null) action()
-            if (valueComponent != null) valueComponent()
-        }
-    }
-}
-
-fun printWebView(context: Context, htmlContent: String, isColor: Boolean, isLetterSize: Boolean) {
+fun printWebView(context: Context, htmlContent: String) {
     val printManager = context.getSystemService(Context.PRINT_SERVICE) as? PrintManager
     val webView = WebView(context)
     webView.webViewClient = object : WebViewClient() {
         override fun onPageFinished(view: WebView?, url: String?) {
-            val attributes = PrintAttributes.Builder()
-                .setColorMode(if (isColor) PrintAttributes.COLOR_MODE_COLOR else PrintAttributes.COLOR_MODE_MONOCHROME)
-                .setMediaSize(if (isLetterSize) PrintAttributes.MediaSize.NA_LETTER else PrintAttributes.MediaSize.ISO_A4)
-                .build()
+            // Use default attributes, user can change in system dialog
+            val attributes = PrintAttributes.Builder().build()
 
             printManager?.print(
                 "Math_Worksheet",

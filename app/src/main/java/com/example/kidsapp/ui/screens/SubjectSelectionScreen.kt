@@ -74,14 +74,23 @@ fun SubjectSelectionScreen(
         else -> "Grade $gradeId"
     }
 
-    val subjects = listOf(
-        SubjectOption("math", "Math", Icons.Default.Calculate, Color(0xFFFFCC80), isEnabled = true), // Orange-ish
-        SubjectOption("english", "Reading", Icons.Default.MenuBook, Color(0xFF90CAF9), isEnabled = false), // Blue
-        SubjectOption("science", "Science", Icons.Default.Science, Color(0xFFA5D6A7), isEnabled = false), // Green
-        SubjectOption("art", "Art", Icons.Default.Brush, Color(0xFFE1BEE7), isEnabled = false), // Purple
-        SubjectOption("writing", "Writing", Icons.Default.Edit, Color(0xFFEF9A9A), isEnabled = false), // Red
-        SubjectOption("social", "Social Studies", Icons.Default.Public, Color(0xFF80DEEA), isEnabled = false) // Cyan
-    )
+    val subjects = if (gradeId == "pre") {
+        listOf(
+            SubjectOption("numbers", "Numbers", Icons.Default.Calculate, Color(0xFFFFCC80)),
+            SubjectOption("alphabets", "Alphabets", Icons.Default.MenuBook, Color(0xFF90CAF9)),
+            SubjectOption("shapes", "Shapes", Icons.Default.Public, Color(0xFFA5D6A7)),
+            SubjectOption("colors", "Colors", Icons.Default.Brush, Color(0xFFE1BEE7))
+        )
+    } else {
+        listOf(
+            SubjectOption("math", "Math", Icons.Default.Calculate, Color(0xFFFFCC80), isEnabled = true),
+            SubjectOption("english", "Reading", Icons.Default.MenuBook, Color(0xFF90CAF9), isEnabled = false),
+            SubjectOption("science", "Science", Icons.Default.Science, Color(0xFFA5D6A7), isEnabled = false),
+            SubjectOption("art", "Art", Icons.Default.Brush, Color(0xFFE1BEE7), isEnabled = false),
+            SubjectOption("writing", "Writing", Icons.Default.Edit, Color(0xFFEF9A9A), isEnabled = false),
+            SubjectOption("social", "Social Studies", Icons.Default.Public, Color(0xFF80DEEA), isEnabled = false)
+        )
+    }
 
     Scaffold(
         topBar = {

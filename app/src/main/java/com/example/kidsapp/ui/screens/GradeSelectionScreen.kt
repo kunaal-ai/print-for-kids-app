@@ -57,20 +57,15 @@ fun GradeSelectionScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
-                IconButton(onClick = { /* Handle back if needed */ }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                }
-                Spacer(modifier = Modifier.weight(1f))
                 // Step Indicators
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(modifier = Modifier.size(24.dp, 8.dp).background(Color(0xFFFFC107), CircleShape))
                     Box(modifier = Modifier.size(8.dp).background(Color.LightGray, CircleShape))
                     Box(modifier = Modifier.size(8.dp).background(Color.LightGray, CircleShape))
                 }
-                Spacer(modifier = Modifier.weight(1f))
-                Spacer(modifier = Modifier.width(48.dp)) // Balance
             }
         }
     ) { innerPadding ->

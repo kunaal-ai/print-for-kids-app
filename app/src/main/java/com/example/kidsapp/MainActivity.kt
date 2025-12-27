@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.kidsapp.ui.screens.GradeSelectionScreen
 import com.example.kidsapp.ui.screens.OperationSelectionScreen
+import com.example.kidsapp.ui.screens.PrinterSelectionScreen
 import com.example.kidsapp.ui.screens.SubjectSelectionScreen
 import com.example.kidsapp.ui.screens.WorksheetPreviewScreen
 import com.example.kidsapp.ui.theme.KidsAppTheme

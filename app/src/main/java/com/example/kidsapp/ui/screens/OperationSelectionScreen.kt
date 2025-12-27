@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.kidsapp.ui.components.SelectionCard
+import com.example.kidsapp.ui.theme.darken
 
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material.icons.rounded.Add
@@ -169,12 +170,4 @@ fun OperationCard(
     }
 }
 
-// Helper to darken color
-fun Color.darken(factor: Float): Color {
-    return Color(
-        red = this.red * (1 - factor),
-        green = this.green * (1 - factor),
-        blue = this.blue * (1 - factor),
-        alpha = this.alpha
-    )
-}
+

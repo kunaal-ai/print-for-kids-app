@@ -1,0 +1,10 @@
+/Users/kt/Documents/github.com/print-for-kids/app/src/main/java/com/example/kidsapp/ui/screens/OperationSelectionScreen.kt
+/Users/kt/Documents/github.com/print-for-kids/app/src/main/java/com/example/kidsapp/ui/theme/Type.kt
+/Users/kt/Documents/github.com/print-for-kids/app/src/main/java/com/example/kidsapp/MainActivity.kt
+/Users/kt/Documents/github.com/print-for-kids/app/src/main/java/com/example/kidsapp/ui/screens/GradeSelectionScreen.kt
+/Users/kt/Documents/github.com/print-for-kids/app/src/main/java/com/example/kidsapp/ui/screens/WorksheetPreviewScreen.kt
+/Users/kt/Documents/github.com/print-for-kids/app/src/main/java/com/example/kidsapp/ui/components/SelectionCard.kt
+/Users/kt/Documents/github.com/print-for-kids/app/src/main/java/com/example/kidsapp/ui/theme/Color.kt
+/Users/kt/Documents/github.com/print-for-kids/app/src/main/java/com/example/kidsapp/ui/theme/Theme.kt
+/Users/kt/Documents/github.com/print-for-kids/app/src/main/java/com/example/kidsapp/utils/MathGenerator.kt
+/Users/kt/Documents/github.com/print-for-kids/app/src/main/java/com/example/kidsapp/ui/screens/SubjectSelectionScreen.kt

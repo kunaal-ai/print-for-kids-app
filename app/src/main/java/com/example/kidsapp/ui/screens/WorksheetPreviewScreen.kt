@@ -41,6 +41,11 @@ fun WorksheetPreviewScreen(
         MathGenerator.generateProblems(grade, operation)
     }
 
+    // State for Print Settings
+    var isColor by remember { androidx.compose.runtime.mutableStateOf(true) }
+    var isLetterSize by remember { androidx.compose.runtime.mutableStateOf(true) } // True = Letter, False = A4
+    var copies by remember { androidx.compose.runtime.mutableIntStateOf(1) } // Visual only, system handles copies
+
     // Generate HTML for the worksheet
     val htmlContent = remember(problems) {
         val sb = StringBuilder()
@@ -103,7 +108,7 @@ fun WorksheetPreviewScreen(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { printWebView(context, htmlContent) },
+                    onClick = { printWebView(context, htmlContent, isColor, isLetterSize) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
@@ -164,32 +169,18 @@ fun WorksheetPreviewScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Printer Setting
+            // Printer Setting (Informational Only)
             SettingRow(
                 icon = Icons.Default.Print,
                 title = "Printer",
-                subtitle = "Select in next step", // Android handles this in the system dialog
-                isReady = true, 
-                value = "Tap to Select",
-                action = { 
-                    Surface(
-                        color = Color(0xFFF5F5F5),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.clickable { printWebView(context, htmlContent) }
-                    ) {
-                        Text(
-                            text = "Change", 
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
+                subtitle = "Select at final step",
+                isReady = true,
+                value = "Standard"
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Copies Setting
+            // Copies Setting (Visual Only - System handles this)
             SettingRow(
                 icon = Icons.Default.FileCopy, 
                 title = "Copies",
@@ -198,10 +189,12 @@ fun WorksheetPreviewScreen(
                        verticalAlignment = Alignment.CenterVertically,
                        modifier = Modifier.background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp))
                    ) {
-                       IconButton(onClick = {}) { Text("-", fontWeight = FontWeight.Bold) }
-                       Text("1", fontWeight = FontWeight.Bold)
+                       IconButton(onClick = { if (copies > 1) copies-- }) { 
+                           Text("-", fontWeight = FontWeight.Bold) 
+                       }
+                       Text("$copies", fontWeight = FontWeight.Bold)
                        IconButton(
-                           onClick = {},
+                           onClick = { copies++ },
                            colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFFFC107))
                        ) { 
                            Text("+", fontWeight = FontWeight.Bold, color = Color.Black) 
@@ -223,19 +216,27 @@ fun WorksheetPreviewScreen(
                            .padding(4.dp)
                    ) {
                        Button(
-                           onClick = {}, 
-                           colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
+                           onClick = { isColor = true }, 
+                           colors = ButtonDefaults.buttonColors(
+                               containerColor = if (isColor) Color.White else Color.Transparent, 
+                               contentColor = if (isColor) Color.Black else Color.Gray
+                           ),
                            shape = RoundedCornerShape(12.dp),
-                           elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+                           elevation = ButtonDefaults.buttonElevation(defaultElevation = if (isColor) 2.dp else 0.dp),
                            contentPadding = PaddingValues(horizontal = 12.dp),
                            modifier = Modifier.height(32.dp)
                        ) { Text("Color", fontSize = 12.sp, fontWeight = FontWeight.Bold) }
                        
                        TextButton(
-                           onClick = {}, 
+                           onClick = { isColor = false }, 
                            modifier = Modifier.height(32.dp),
-                           contentPadding = PaddingValues(horizontal = 12.dp)
-                       ) { Text("B&W", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold) }
+                           colors = ButtonDefaults.textButtonColors(
+                               contentColor = if (!isColor) Color.Black else Color.Gray
+                           ),
+                           // Hacky way to simulate selection style for the text button or just switch types? 
+                           // For simplicity, let's just color the text correctly. 
+                           // A better way is two Buttons with different states.
+                       ) { Text("B&W", fontSize = 12.sp, fontWeight = FontWeight.Bold) }
                    }
                 }
             )
@@ -248,9 +249,16 @@ fun WorksheetPreviewScreen(
                 valueComponent = {
                    Row(
                        verticalAlignment = Alignment.CenterVertically,
-                       modifier = Modifier.background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)
+                       modifier = Modifier.background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+                           .padding(horizontal = 12.dp, vertical = 6.dp)
+                           .clickable { isLetterSize = !isLetterSize }
                    ) {
-                       Text("Letter (8.5x11)", fontSize = 14.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                       Text(
+                           if (isLetterSize) "Letter (8.5x11)" else "ISO A4", 
+                           fontSize = 14.sp, 
+                           color = Color.Black, 
+                           fontWeight = FontWeight.Bold
+                       )
                        Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.Gray)
                    }
                 }
@@ -324,15 +332,20 @@ fun SettingRow(
     }
 }
 
-fun printWebView(context: Context, htmlContent: String) {
+fun printWebView(context: Context, htmlContent: String, isColor: Boolean, isLetterSize: Boolean) {
     val printManager = context.getSystemService(Context.PRINT_SERVICE) as? PrintManager
     val webView = WebView(context)
     webView.webViewClient = object : WebViewClient() {
         override fun onPageFinished(view: WebView?, url: String?) {
+            val attributes = PrintAttributes.Builder()
+                .setColorMode(if (isColor) PrintAttributes.COLOR_MODE_COLOR else PrintAttributes.COLOR_MODE_MONOCHROME)
+                .setMediaSize(if (isLetterSize) PrintAttributes.MediaSize.NA_LETTER else PrintAttributes.MediaSize.ISO_A4)
+                .build()
+
             printManager?.print(
                 "Math_Worksheet",
                 webView.createPrintDocumentAdapter("Worksheet"),
-                PrintAttributes.Builder().build()
+                attributes
             )
         }
     }

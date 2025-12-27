@@ -77,12 +77,30 @@ fun WorksheetPreviewScreen(
             )
         },
         bottomBar = {
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(Color.White)
                     .padding(24.dp)
-                    .background(Color.White) // Ensure visibility against content
             ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Estimated cost",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.Gray
+                    )
+                    Text(
+                        text = "Free",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = { printWebView(context, htmlContent) },
                     modifier = Modifier
@@ -148,25 +166,44 @@ fun WorksheetPreviewScreen(
             // Printer Setting
             SettingRow(
                 icon = Icons.Default.Print,
-                title = "Printer",
-                value = "System Printer",
-                action = { TextButton(onClick = {}) { Text("Change", color = Color.Gray) } }
+                title = "HP DeskJet 3700",
+                subtitle = "Ready to print",
+                isReady = true,
+                action = { 
+                    Surface(
+                        color = Color(0xFFF5F5F5),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.clickable { }
+                    ) {
+                        Text(
+                            text = "Change", 
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             // Copies Setting
             SettingRow(
-                icon = Icons.Default.FileCopy, // Using FileCopy as closest
+                icon = Icons.Default.FileCopy, 
                 title = "Copies",
                 valueComponent = {
                    Row(
                        verticalAlignment = Alignment.CenterVertically,
-                       modifier = Modifier.background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+                       modifier = Modifier.background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp))
                    ) {
                        IconButton(onClick = {}) { Text("-", fontWeight = FontWeight.Bold) }
                        Text("1", fontWeight = FontWeight.Bold)
-                       IconButton(onClick = {}) { Text("+", fontWeight = FontWeight.Bold) }
+                       IconButton(
+                           onClick = {},
+                           colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFFFC107))
+                       ) { 
+                           Text("+", fontWeight = FontWeight.Bold, color = Color.Black) 
+                       }
                    }
                 }
             )
@@ -179,16 +216,24 @@ fun WorksheetPreviewScreen(
                 valueComponent = {
                    Row(
                        verticalAlignment = Alignment.CenterVertically,
-                       modifier = Modifier.background(Color(0xFFF5F5F5), RoundedCornerShape(16.dp))
+                       modifier = Modifier
+                           .background(Color(0xFFF5F5F5), RoundedCornerShape(16.dp))
+                           .padding(4.dp)
                    ) {
                        Button(
                            onClick = {}, 
                            colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
-                           shape = RoundedCornerShape(16.dp),
-                           elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
+                           shape = RoundedCornerShape(12.dp),
+                           elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+                           contentPadding = PaddingValues(horizontal = 12.dp),
                            modifier = Modifier.height(32.dp)
-                       ) { Text("Color", fontSize = 12.sp) }
-                       TextButton(onClick = {}, modifier = Modifier.height(32.dp)) { Text("B&W", color = Color.Gray, fontSize = 12.sp) }
+                       ) { Text("Color", fontSize = 12.sp, fontWeight = FontWeight.Bold) }
+                       
+                       TextButton(
+                           onClick = {}, 
+                           modifier = Modifier.height(32.dp),
+                           contentPadding = PaddingValues(horizontal = 12.dp)
+                       ) { Text("B&W", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold) }
                    }
                 }
             )
@@ -203,7 +248,7 @@ fun WorksheetPreviewScreen(
                        verticalAlignment = Alignment.CenterVertically,
                        modifier = Modifier.background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp)
                    ) {
-                       Text("Letter (8.5x11)", fontSize = 14.sp, color = Color.Gray)
+                       Text("Letter (8.5x11)", fontSize = 14.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
                        Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.Gray)
                    }
                 }
@@ -218,6 +263,8 @@ fun WorksheetPreviewScreen(
 fun SettingRow(
     icon: ImageVector,
     title: String,
+    subtitle: String? = null,
+    isReady: Boolean = false,
     value: String? = null,
     action: (@Composable () -> Unit)? = null,
     valueComponent: (@Composable () -> Unit)? = null
@@ -236,24 +283,38 @@ fun SettingRow(
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(48.dp)
                     .background(Color(0xFFFFF8E1), CircleShape), // Light Yellow bg for icon
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = null, tint = Color.Black, modifier = Modifier.size(20.dp))
+                Icon(icon, contentDescription = null, tint = Color.Black, modifier = Modifier.size(24.dp))
             }
             Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            if (value != null) {
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(text = value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-                    // Optional small subtext "Ready to print" could go here
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                if (subtitle != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (isReady) {
+                            Box(modifier = Modifier.size(6.dp).background(Color(0xFF4CAF50), CircleShape))
+                            Spacer(modifier = Modifier.width(4.dp))
+                        }
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Color.Gray
+                        )
+                    }
                 }
+            }
+            
+            Spacer(modifier = Modifier.weight(1f))
+            
+            if (value != null) {
+                Text(text = value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
             }
             if (action != null) action()
             if (valueComponent != null) valueComponent()
